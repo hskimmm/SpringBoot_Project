@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.springProject.dto.DeletePostsDto;
 import com.springProject.dto.UsersDto;
-import com.springProject.entity.BookMarks;
-import com.springProject.entity.Prefers;
-import com.springProject.entity.Users;
+import com.springProject.entity.*;
 import com.springProject.repository.BannedUserRepository;
+import com.springProject.repository.DeletePostsRepository;
 import com.springProject.repository.UsersRepository;
 import com.springProject.utils.ConvertUtils;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 
 import com.springProject.SearchData;
 import com.springProject.dto.PostsDto;
-import com.springProject.entity.Posts;
 import com.springProject.repository.PostsRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PostsService {
 
     private final PostsRepository postsRepository;
+    private final DeletePostsRepository deletePostsRepository;
     private final UsersRepository usersRepository;
 
     public PostsDto createPost(PostsDto postsDto, String username) {
@@ -179,7 +179,7 @@ public class PostsService {
         return ConvertUtils.convertPostsToDto(findPosts);
     }
 
-    public void deleteNotice(String username, Long id) {
+    public void deleteNotice(String username, Long id, DeletePostsDto deletePostsDto) {
         Posts findPosts = postsRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("잘못된 ID 입니다."));
         Users findUsers = usersRepository.findOptionalByLoginId(username).orElseThrow(() -> new IllegalArgumentException("잘못된 ID 입니다."));
 
@@ -190,6 +190,16 @@ public class PostsService {
             throw new AccessDeniedException("권한이 없습니다.");
         }
 
+        //게시물 삭제 시 로그 테이블 남기는 로직
+        DeletePosts deletePosts = DeletePosts.builder()
+                .users(findPosts.getUsers())
+                .title(deletePostsDto.getTitle())
+                .reason(deletePostsDto.getReason())
+                .deleted_at(LocalDateTime.now())
+                .delete_by(username)
+                .build();
+
+        deletePostsRepository.save(deletePosts);
         postsRepository.delete(findPosts);
     }
 

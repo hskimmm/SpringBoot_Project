@@ -79,6 +79,7 @@
                                 <th></th>
                                 <th>제목</th>
                                 <th>작성자</th>
+                                <th>삭제 사유</th>
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -312,7 +313,7 @@
                 let tbody = $("#postsTable tbody");
                 tbody.empty();
                 if(data.length === 0) {
-                    tbody.append('<tr>' + '<td colspan="3">등록된 게시글이 없습니다</td>' + '</tr>')
+                    tbody.append('<tr>' + '<td colspan="4">등록된 게시글이 없습니다</td>' + '</tr>')
                 } else {
                     $.each(data, function(i, posts){
                         tbody.append(
@@ -320,6 +321,7 @@
                             '<td><input type="checkbox" name="userSelect"></td>' +
                             '<td>' + posts.title + '</td>' +
                             '<td>' + (posts.usersDto ? posts.usersDto.loginId : '') + '</td>' +
+                            '<td><input type="text" class="reason" name="reason" placeholder="삭제 사유"/></td>' +
                             '</tr>'
                         )
                     });
@@ -349,7 +351,7 @@
                 tbody.empty();
 
                 if(data.length === 0) {
-                    tbody.html('<tr>' + '<td colspan="3">입력하신 검색어에 해당하는 검색 결과가 없습니다.</td>' + '</tr>');
+                    tbody.html('<tr>' + '<td colspan="4">입력하신 검색어에 해당하는 검색 결과가 없습니다.</td>' + '</tr>');
                     return;
                 }
 
@@ -359,6 +361,7 @@
                         '<td><input type="checkbox" name="userSelect"></td>' +
                         '<td>' + search.title + '</td>' +
                         '<td>' + (search.usersDto ? search.usersDto.loginId : '') + '</td>' +
+                        '<td><input type="text" class="reason" name="reason" placeholder="삭제 사유"/></td>' +
                         '</tr>'
                     );
                 });
@@ -376,9 +379,12 @@
         $("input[name='userSelect']:checked").each(function(){
             let row = $(this).closest('tr');
             let postId = row.data('post-id');
-
+            let title = row.find('td:eq(1)').text();
+            let reason = row.find('.reason').val();
             deletePosts.push({
-               id : postId
+                id : postId,
+                deleteTitle : title,
+                deleteReason : reason
             });
         });
 
@@ -395,6 +401,11 @@
             $.ajax({
                 url : "/api/posts/notice/delete/" + post.id,
                 method : "DELETE",
+                contentType: 'application/json',
+                data : JSON.stringify({ // js 배열에 담겨 있는 객체와 값들을 json 으로 변경 -> Controller 에서 @RequestBody로 json을 받음
+                    title : post.deleteTitle,
+                    reason : post.deleteReason
+                }),
                 success: function() {completionHandler(true);},
                 error: function() {completionHandler(false);}
             });

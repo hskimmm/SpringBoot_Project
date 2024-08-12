@@ -2,6 +2,7 @@ package com.springProject.controller;
 
 import java.util.List;
 
+import com.springProject.dto.DeletePostsDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -191,10 +192,8 @@ public class PostsController {
 
     @DeleteMapping("/notice/delete/{id}")
     @PreAuthorize("hasAnyRole('ROLE_admin')")
-    public ResponseEntity<String> deleteNotice(@AuthenticationPrincipal UserDetails users, @PathVariable Long id) {
-
-        postsService.deleteNotice(users.getUsername(), id);
-
+    public ResponseEntity<String> deleteNotice(@AuthenticationPrincipal UserDetails users, @PathVariable Long id, @RequestBody DeletePostsDto deletePostsDto) {
+        postsService.deleteNotice(users.getUsername(), id, deletePostsDto);
         return ResponseEntity.status(HttpStatus.OK).body("삭제 완료");
     }
 

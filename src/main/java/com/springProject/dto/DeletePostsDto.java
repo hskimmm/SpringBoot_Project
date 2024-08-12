@@ -20,4 +20,5 @@ public class DeletePostsDto {
   private String title;
   private String reason;
   private LocalDateTime deleted_at;
+  private String delete_by;
 }
