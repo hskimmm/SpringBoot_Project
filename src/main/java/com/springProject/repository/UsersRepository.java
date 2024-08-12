@@ -6,6 +6,7 @@ import org.springframework.stereotype.Repository;
 
 import com.springProject.entity.Users;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,4 +20,7 @@ public interface UsersRepository extends JpaRepository<Users, Long> {
 
     @Query("select u from Users u where u.loginId = :loginId")
     Optional<Users> findOptionalByLoginId(String loginId);
+
+    @Query("SELECT u FROM Users u WHERE u.auth != 'admin'")
+    List<Users> findByUsers();
 }

@@ -234,7 +234,7 @@ public class UsersService {
 
     @Transactional(readOnly = true)
     public List<UsersDto> getAllUsers() {
-        return Optional.ofNullable(usersRepository.findAll()).orElse(Collections.emptyList())
+            return Optional.ofNullable(usersRepository.findByUsers()).orElse(Collections.emptyList())
                 .stream().map(ConvertUtils::convertUsersToDto).collect(Collectors.toList());
     }
 
