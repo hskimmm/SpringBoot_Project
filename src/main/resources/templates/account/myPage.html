@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>마이페이지</title>
+    <link th:rel="stylesheet" th:href="@{/css/signup.css}">
+    <link th:rel="stylesheet" th:href="@{/css/header.css}">
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+</head>
+<body>
+    <header>
+        <a id="backToHome" href="/api/posts/search">Home</a>
+        <img id="header" th:src="@{/img/header.png}">
+        <a th:if="${user == null}" href="/api/users/login">로그인<img class="characterImg" th:src="@{/img/character.png}"></a>
+        <a th:if="${user != null && user.auth.name() != 'admin'}" href="/api/users/login">로그아웃<img class="characterImg" th:src="@{/img/character.png}"></a>
+        <a th:if="${user != null && user.auth.name() == 'admin'}" href="/api/users/admin">관리자 페이지<img class="characterImg" th:src="@{/img/character.png}"></a>
+    </header>
+    <div class="sign-container">
+        <form id="accountUpdateForm">
+            <input type="hidden" th:name="id" th:value="${user.id}"/>
+            <div class="common-form-input">
+                <label for="name">이름</label>
+                <input type="text" id="name" th:name="name" th:value="${user.name}" disabled>
+            </div>
+            <div class="form-input">
+                <label for="nickname">닉네임</label>
+                <input type="text" id="nickname" th:name="nickname" th:value="${user.nickname}" disabled>
+                <button type="button" class="checked-btn" id="checkNickname" onclick="checkDuplicateNickname()" disabled>중복 확인</button>
+                <span id="nicknameResult"></span>
+            </div>
+            <div class="form-input">
+                <label for="email">이메일</label>
+                <input type="email" id="email" th:name="email" th:value="${user.email}" disabled>
+                <button type="button" class="checked-btn" id="checkEmail" onclick="checkDuplicateEmail()" disabled>중복 확인</button>
+                <span id="emailResult"></span>
+            </div>
+            <div class="signup-button">
+                <button type="button" class="signup-btn update-btn" onclick="updateForm()">내 정보 수정</button>
+            </div>
+            <div class="signup-button signup-button-gap">
+                <button type="button" class="signup-btn" onclick="backToLogin()">돌아가기</button>
+            </div>
+        </form>
+    </div>
+</body>
+<script>
+    let isNameAvailable = false;
+    let isNicknameAvailable = false;
+    let isEmailAvailable = false;
+
+    //버튼 클릭 시 input/button 활성화
+    function updateForm() {
+        $("#name").prop("disabled", false);
+        $("#nickname").prop("disabled", false);
+        $("#email").prop("disabled", false);
+        $("#checkNickname").prop("disabled", false);
+        $("#checkEmail").prop("disabled", false);
+        $(".update-btn").text("수정");
+        $(".update-btn").attr('onclick', 'validateForm()');
+    }
+
+    //이름 체크
+    function checkName() {
+        let userName = $('#name').val();
+
+        if(userName === '') {
+            alert("이름 항목을 입력해주세요.");
+            $("#name").focus();
+            isNameAvailable = false;
+            return false;
+        }
+
+        isNameAvailable = true;
+        return true;
+    }
+
+    //닉네임 중복체크
+    function checkDuplicateNickname() {
+        let userNickName = $('#nickname').val();
+
+        if(userNickName === '') {
+            alert("닉네임 항목을 입력해주세요.");
+            $("#nickname").focus();
+            return false;
+        }
+
+        $.ajax({
+            url : "/api/users/checkDuplicateNickname",
+            method : "GET",
+            data : {nickname : userNickName},
+            dataType : "JSON",
+            success : function(data) {
+                if(data) {
+                    $("#nicknameResult").text('이미 사용 중인 닉네임입니다.').css('color', 'red');
+                    isNicknameAvailable = false;
+                } else {
+                    $("#nicknameResult").text('사용 가능한 닉네임입니다.').css('color', 'green');
+                    isNicknameAvailable = true;
+                }
+            },
+            error : function() {
+                alert("닉네임 중복 체크 중 오류가 발생하였습니다.");
+            }
+        });
+    }
+
+    //이메일 중복체크
+    function checkDuplicateEmail() {
+        let userEmail = $('#email').val();
+
+        if(userEmail === '') {
+            alert("이메일 항목을 입력해주세요.");
+            $("#email").focus();
+            return false;
+        }
+
+        $.ajax({
+            url : "/api/users/checkDuplicateEmail",
+            method : "GET",
+            data : {email : userEmail},
+            dataType : "JSON",
+            success : function(data) {
+                if(data) {
+                    $("#emailResult").text('이미 사용 중인 이메일입니다.').css('color', 'red');
+                    isEmailAvailable = false;
+                } else {
+                    $("#emailResult").text('사용 가능한 이메일입니다.').css('color', 'green');
+                    isEmailAvailable = true;
+                }
+            },
+            error : function() {
+                alert("이메일 중복 체크 중 오류가 발생하였습니다.");
+            }
+        });
+    }
+
+
+    //검증
+    function validateForm() {
+        if(!checkName()){return false;}
+
+        if(!isNameAvailable) {
+            alert("이름 필드를 확인해주세요.");
+            return false;
+        }
+
+        if(!isNicknameAvailable) {
+            alert("닉네임 중복 확인을 해주세요.");
+            return false;
+        }
+
+        if(!isEmailAvailable) {
+            alert("이메일 중복 확인을 해주세요.");
+            return false;
+        }
+
+        editProfile();
+    }
+
+    //업데이트
+    function editProfile() {
+        let id = $("input[name='id']").val();
+        let name = $("#name").val();
+        let nickname = $("#nickname").val();
+        let email = $("#email").val();
+
+        $.ajax({
+            url : "/api/users/myPage/" + id,
+            method : "PUT",
+            contentType: 'application/json',
+            data : JSON.stringify({
+               name : name,
+               nickname : nickname,
+               email : email
+            }),
+            success : function() {
+                alert("내 정보를 수정하였습니다.");
+                location.reload();
+            },
+            error : function() {
+                alert("내 정보를 수정 처리 하는 중 오류가 발생하였습니다.");
+            }
+        });
+    }
+
+    $("#nickname").on("input", function(){
+        isNicknameAvailable = false;
+        $("#nicknameResult").text('닉네임 중복 확인이 필요합니다.').css('color', 'blue');
+    });
+
+    $("#email").on("input", function(){
+        isEmailAvailable = false;
+        $("#emailResult").text('이메일 중복 확인이 필요합니다.').css('color', 'blue');
+    });
+
+    //뒤로가기
+    function backToLogin() {
+        window.location.href = "/api/posts/search";
+    }
+</script>
+</html>

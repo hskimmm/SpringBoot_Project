@@ -46,3 +46,8 @@ header a {
 header a:hover {
     color: white;
 }
+
+.myPage {
+    right: 200px;
+    top:35px;
+}

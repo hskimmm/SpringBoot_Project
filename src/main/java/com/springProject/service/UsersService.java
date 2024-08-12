@@ -2,6 +2,7 @@ package com.springProject.service;
 
 import com.springProject.dto.BannedDateReasonForm;
 import com.springProject.dto.MessageDto;
+import com.springProject.dto.UserUpdateForm;
 import com.springProject.dto.UsersDto;
 import com.springProject.entity.BannedUser;
 import com.springProject.entity.Users;
@@ -246,5 +247,14 @@ public class UsersService {
     @Transactional(readOnly = true)
     public UsersDto getSearchUser(String userId) {
         return ConvertUtils.convertUsersToDto(usersRepository.findOptionalByLoginId(userId).orElseThrow(() -> new NoSuchElementException("User not found with userId: " + userId)));
+    }
+
+    public void updateUser(long id, UserUpdateForm userUpdateForm) {
+        Users findUser = usersRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("잘못된 ID 입니다."));
+
+        findUser.setName(userUpdateForm.getName());
+        findUser.setNickname(userUpdateForm.getNickname());
+        findUser.setEmail(userUpdateForm.getEmail());
+        usersRepository.save(findUser);
     }
 }

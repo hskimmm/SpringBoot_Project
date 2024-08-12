@@ -14,6 +14,7 @@
     <a th:if="${user == null}" href="/api/users/login"><p>로그인</p><img class="characterImg" th:src="@{/img/character.png}"></a>
     <a th:if="${user != null && user.auth.name() != 'admin'}" href="/api/users/login"><p>로그아웃</p><img class="characterImg" th:src="@{/img/character.png}"></a>
     <a th:if="${user != null && user.auth.name() == 'admin'}" href="/api/users/admin"><p>관리자 페이지</p><img class="characterImg" th:src="@{/img/character.png}"></a>
+    <a class="myPage" th:if="${user != null && user.auth.name() == 'user'}" th:href="@{|/api/users/myPage/${user.id}|}">마이페이지</a>
 </header>
 <main>
     <script th:inline="javascript">

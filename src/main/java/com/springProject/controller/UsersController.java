@@ -2,7 +2,9 @@ package com.springProject.controller;
 
 import com.springProject.dto.BannedDateReasonForm;
 import com.springProject.dto.MessageDto;
+import com.springProject.dto.UserUpdateForm;
 import com.springProject.dto.UsersDto;
+import com.springProject.entity.Users;
 import com.springProject.service.UsersService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -193,5 +195,23 @@ public class UsersController {
             log.error(e.getMessage());
             return ResponseEntity.notFound().build();
         }
+    }
+
+    //마이페이지
+    @GetMapping("/myPage/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_user')")
+    public String getMyPage(@PathVariable long id, Model model) {
+        UsersDto user = usersService.getUsers(id);
+
+        model.addAttribute("user", user);
+        return "account/myPage";
+    }
+
+    //마이페이지 - 업데이트(내 정보 수정)
+    @PutMapping("/myPage/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_user')")
+    public ResponseEntity<String> updateUser(@PathVariable long id, @RequestBody UserUpdateForm userUpdateForm) {
+        usersService.updateUser(id, userUpdateForm);
+        return ResponseEntity.ok().body("success");
     }
 }
