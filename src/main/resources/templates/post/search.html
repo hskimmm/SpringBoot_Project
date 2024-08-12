@@ -256,8 +256,16 @@
         </div>
         <p th:if="${page.isEmpty()}" id="no-post">검색 조건과 일치하는 게시글이 없습니다.</p>
     </div>
+    <div class="common-button button-gap" th:if="${user != null && user.auth.name() == 'user'}">
+        <button type="button" class="common-btn" onclick="goToWithDrawForm()">회원 탈퇴</button>
+    </div>
 </main>
 <footer></footer>
 <script th:src="@{/js/search.js}"></script>
+<script>
+    function goToWithDrawForm() {
+        location.href = "/api/users/withdrawForm";
+    }
+</script>
 </body>
 </html>

@@ -42,4 +42,7 @@ public class DeletePosts {
 
 	@Column(nullable = false)
 	private LocalDateTime deleted_at;
+
+	@Column(nullable = false)
+	private String delete_by;
 }
